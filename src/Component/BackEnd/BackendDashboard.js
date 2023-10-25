@@ -1,20 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import BackAbout from './BackAbout';
-import BackView from './BackView';
-import BackAppointmentSuccess from './BackAppoinmentSuccess';
-import BackServiceMapingEcommerce from './BackServiceMapingEcommerce';
-import BackServiceMedical from './BackServiceMedical';
-import BackFooter from './BackFooter';
-import BackPatientReviews from './BackPatientReviews';
-import BackHomePage from './BackHomePage';
-import ImageUpload from './ImageUpload';
+import React, { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { components } from './Components'
+import ConfirmationModal from './ConfirmationModal'
 
-const BackendDashboard = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-  const [activeContent, setActiveContent] = useState(null);
+const BackendDashboard = ({setIsAuthenticated}) => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false)
+  const [activeContent, setActiveContent] = useState(null)
+  const setIntialStateModal = () => setModalState(prevState => ({...prevState, showModal: false }))
+  const [modalState, setModalState] = useState({
+    showModal: false,
+    handleUpdate: ()=>{},
+    setShowConfirmationModal:setIntialStateModal,
+  })
+
+  useEffect(() => {
+    setActiveContent(components[0])
+  }, [])
 
   useEffect(() => {
     // You should have a function or mechanism to check if admin is logged in.
@@ -22,63 +25,56 @@ const BackendDashboard = () => {
     const checkAdminLoginStatus = () => {
       // You can implement your own logic here to check if the admin is logged in.
       // For now, I'm using a flag to simulate the logged-in status.
-      const isAdminLoggedIn = true; // Replace with your actual authentication check
-      setIsAdminLoggedIn(isAdminLoggedIn);
-    };
+      const isAdminLoggedIn = true // Replace with your actual authentication check
+      setIsAdminLoggedIn(isAdminLoggedIn)
+    }
 
-    checkAdminLoginStatus();
-  }, [location]);
+    checkAdminLoginStatus()
+  }, [location])
 
   // Function to handle content selection
   const handleContentSelect = (contentName) => {
-    setActiveContent(contentName);
-  };
+    setActiveContent(contentName)
+  }
 
   const handleLogout = () => {
     // Implement your logout logic here
     // For now, just navigate to "/backHome" as an example
-    navigate("/");
-  };
+    setIsAuthenticated(false)
+    navigate('/')
+  }
 
   return (
-    <div className="container">
+    <div >
+      <div className='d-flex justify-content-between m-2'>
+        <div>
+          <h3 className='text-center '>Welcome to Eikon BackEnd </h3>
+        </div>
+        <div>
+          <button className='btn btn-danger' onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </div>
       {isAdminLoggedIn ? (
         <div className=''>
-          <div className="row justify-content-around p-3">
-          <button className="btn " onClick={() => handleContentSelect('BackHomePage')}>Home Banner</button>
-          <button className="btn " onClick={() => handleContentSelect('imageUpload')}>Image Upload</button>
-            <button className="btn " onClick={() => handleContentSelect('BackAbout')}>About</button>
-            <button className="btn" onClick={() => handleContentSelect('BackView')}>Enquiry</button>
-            <button className="btn" onClick={() => handleContentSelect('BackFooter')}>Footer</button>
-            <button className="btn" onClick={() => handleContentSelect('BackPatientReviews')}>Patient Review</button>
-            <button className="btn" onClick={() => handleContentSelect('BackServiceMedical')}>ServiceMedical</button>
-            <button className="btn" onClick={() => handleContentSelect('BackServiceMapingEcommerce')}>Maping Services</button>
-            <button className="btn" onClick={() => handleContentSelect('BackAppointmentSuccess')}>Booking Appointments</button>
-
-            <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
-            {/* Add more links/buttons for other routes as needed */}
+          <div className='bg-secondary justify-content-around p-3'>
+            {components &&
+              components.map((item) => (
+                <button className={`btn ${item.name === activeContent?.name ? 'text-dark bg-light' : 'text-light'}`} key={item.name} onClick={() => handleContentSelect(item)}>
+                  {item.name}
+                </button>
+              ))}
           </div>
-      <h3 className="text-center ">Welcome to Eikon BackEnd </h3>
 
-          <div>
-            {activeContent === 'BackAbout' && <BackAbout />}
-            {activeContent === 'imageUpload' &&<ImageUpload/>}
-            
-            {activeContent === 'BackView' && <BackView />}
-            {activeContent === 'BackFooter' && <BackFooter />}
-            {activeContent === 'BackPatientReviews' && <BackPatientReviews />}
-            {activeContent === 'BackServiceMedical' && <BackServiceMedical />}
-            {activeContent === 'BackServiceMapingEcommerce' && <BackServiceMapingEcommerce />}
-            {activeContent === 'BackAppointmentSuccess' && <BackAppointmentSuccess />}
-            {activeContent === 'BackHomePage' && <BackHomePage />}
-
-          </div>
+          <div> <activeContent.component setModalState={setModalState}/> </div>
         </div>
       ) : (
         <p>Please log in as an admin to access the dashboard.</p>
       )}
+      {modalState.showModal && <ConfirmationModal {...modalState}/>}
     </div>
-  );
-};
+  )
+}
 
-export default BackendDashboard;
+export default BackendDashboard
